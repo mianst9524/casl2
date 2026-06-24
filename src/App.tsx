@@ -8,7 +8,7 @@ import { RegisterPanel } from './ui/components/RegisterPanel';
 import { StackView } from './ui/components/StackView';
 import { IoPanel } from './ui/components/IoPanel';
 import { CCorrespondencePane } from './ui/components/CCorrespondencePane';
-import { SAMPLES } from './ui/data/samples';
+import { SAMPLES, type SamplePhase } from './ui/data/samples';
 import type { AssembleResult } from './core';
 
 type Level = 'easy' | 'normal' | 'all';
@@ -19,6 +19,13 @@ const LEVELS: { id: Level; label: string }[] = [
   { id: 'all', label: '全部見る' },
 ];
 
+// ドロップダウンをフェーズごとに optgroup でまとめる。
+const PHASE_LABELS: Record<SamplePhase, string> = {
+  basic: 'フェーズ1：基礎（純粋な CASL2）',
+  interlude: '幕間：COMET II の本質',
+};
+const PHASE_ORDER: SamplePhase[] = ['basic', 'interlude'];
+
 export function App() {
   const m = useMachine();
   const [source, setSource] = useState(SAMPLES[0].source);
@@ -26,6 +33,9 @@ export function App() {
   const [result, setResult] = useState<AssembleResult | null>(null);
   const [selected, setSelected] = useState(0);
   const [level, setLevel] = useState<Level>('normal');
+  const [sampleId, setSampleId] = useState(SAMPLES[0].id);
+
+  const currentSample = SAMPLES.find((s) => s.id === sampleId) ?? SAMPLES[0];
 
   const showListing = level !== 'easy';
   const showStack = level !== 'easy';
@@ -49,6 +59,7 @@ export function App() {
   const loadSample = useCallback((id: string) => {
     const s = SAMPLES.find((x) => x.id === id);
     if (!s) return;
+    setSampleId(id);
     setSource(s.source);
     setInput(s.input ?? '');
     setResult(null);
@@ -95,14 +106,24 @@ export function App() {
       <header className="app-header">
         <h1>CASL2 学習シミュレーター</h1>
         <div className="sample-select">
-          <label htmlFor="sample">サンプル：</label>
-          <select id="sample" onChange={(e) => loadSample(e.target.value)} defaultValue={SAMPLES[0].id}>
-            {SAMPLES.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.title}
-              </option>
+          <label htmlFor="sample">レッスン：</label>
+          <select id="sample" onChange={(e) => loadSample(e.target.value)} value={sampleId}>
+            {PHASE_ORDER.map((phase) => (
+              <optgroup key={phase} label={PHASE_LABELS[phase]}>
+                {SAMPLES.filter((s) => s.phase === phase).map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.lesson}. {s.title}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
+          <p className="sample-meta">
+            <span className="sample-concept">新概念：{currentSample.concept}</span>
+            {currentSample.watch && (
+              <span className="sample-watch">見どころ：{currentSample.watch}</span>
+            )}
+          </p>
         </div>
         <div className="level-select" role="group" aria-label="表示モード">
           {LEVELS.map((l) => (

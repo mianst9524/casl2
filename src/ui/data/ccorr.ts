@@ -11,8 +11,15 @@ export interface CorrespondenceRegion {
 
 export interface CCorrespondenceExample {
   id: string;
+  /** レッスン階段の通し番号（フェーズ2 ＝ 13〜17・ADR-0004）。samples.ts の 1〜12 と連続。 */
+  lesson: number;
+  phase: 'c';
   title: string;
   description: string;
+  /** この C 機能が COMET II 上でどう表れるか（新概念）。 */
+  concept: string;
+  /** フェーズ1 のどのレッスンで学んだ仕組みを回収するか。 */
+  recallsLesson?: number;
   cLines: string[];
   caslLines: string[];
   regions: CorrespondenceRegion[];
@@ -24,7 +31,11 @@ export interface CCorrespondenceExample {
 export const CCORR_EXAMPLES: CCorrespondenceExample[] = [
   {
     id: 'assign',
+    lesson: 13,
+    phase: 'c',
     title: '代入',
+    concept: 'C の代入＝レジスタへ値を作りメモリへ ST',
+    recallsLesson: 2,
     description: '変数への代入は「レジスタへ値を作り、メモリへ格納」になる。',
     cLines: ['int x;', 'x = 5;'],
     caslLines: ['\tSTART', '\tLAD\tGR1,5', '\tST\tGR1,X', '\tRET', 'X\tDS\t1', '\tEND'],
@@ -36,7 +47,11 @@ export const CCORR_EXAMPLES: CCorrespondenceExample[] = [
   },
   {
     id: 'if',
+    lesson: 14,
+    phase: 'c',
     title: 'if 分岐',
+    concept: 'C の if＝CPA＋条件ジャンプ',
+    recallsLesson: 4,
     description: '条件分岐は「比較（CPA）＋条件ジャンプ」になる。',
     cLines: ['if (x > 0) {', '  y = 1;', '}'],
     caslLines: [
@@ -61,7 +76,11 @@ export const CCORR_EXAMPLES: CCorrespondenceExample[] = [
   },
   {
     id: 'while',
+    lesson: 15,
+    phase: 'c',
     title: 'while ループ',
+    concept: 'C の while＝先頭で比較し外れたら脱出',
+    recallsLesson: 5,
     description: 'ループは「先頭で比較し、条件を外れたら抜ける」構造になる。',
     cLines: ['i = 1;', 'while (i <= n) {', '  i = i + 1;', '}'],
     caslLines: [
@@ -88,7 +107,11 @@ export const CCORR_EXAMPLES: CCorrespondenceExample[] = [
   },
   {
     id: 'array',
+    lesson: 16,
+    phase: 'c',
     title: '配列アクセス',
+    concept: 'C の配列 a[i]＝基底アドレス＋指標修飾',
+    recallsLesson: 6,
     description: '配列 a[i] は「基底アドレス＋指標レジスタ」で表す。連続した語の並びにすぎない。',
     cLines: ['x = a[i];'],
     caslLines: ['\tLD\tGR2,I', '\tLD\tGR1,A,GR2', '\tST\tGR1,X'],
@@ -100,7 +123,11 @@ export const CCORR_EXAMPLES: CCorrespondenceExample[] = [
   },
   {
     id: 'call',
+    lesson: 17,
+    phase: 'c',
     title: '関数呼び出し',
+    concept: 'C の関数＝CALL／RET、引数はスタック経由',
+    recallsLesson: 8,
     description: '関数呼び出しは CALL／RET。戻り番地はスタックに積まれる（ヒープは使わない）。',
     cLines: ['f();', '...', 'void f() {', '  return;', '}'],
     caslLines: ['\tCALL\tF', '\t...', 'F\tNOP', '\tRET'],

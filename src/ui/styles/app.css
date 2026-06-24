@@ -47,12 +47,30 @@ body {
   font-size: 1.1rem;
   margin: 0;
 }
+.sample-select {
+  max-width: 34rem;
+}
 .sample-select select {
   background: var(--panel);
   color: var(--fg);
   border: 1px solid var(--border);
   border-radius: 4px;
   padding: 0.2rem 0.4rem;
+}
+.sample-meta {
+  margin: 0.2rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.72rem;
+  line-height: 1.35;
+}
+.sample-concept {
+  color: var(--fg);
+  font-weight: 600;
+}
+.sample-watch {
+  color: var(--muted);
 }
 .level-select {
   margin-left: auto;
@@ -510,6 +528,11 @@ tr.changed td,
 .ccorr-desc {
   color: var(--muted);
   flex: 1;
+}
+.ccorr-recall {
+  color: var(--accent);
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 .ccorr-ex-head button {
   background: #3b3d4f;

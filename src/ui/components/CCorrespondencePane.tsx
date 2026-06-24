@@ -1,5 +1,12 @@
 import { useState } from 'react';
 import { CCORR_EXAMPLES, type CCorrespondenceExample } from '../data/ccorr';
+import { SAMPLES } from '../data/samples';
+
+function recalledLabel(lesson: number | undefined): string | null {
+  if (lesson === undefined) return null;
+  const s = SAMPLES.find((x) => x.lesson === lesson);
+  return s ? `レッスン${lesson}「${s.title}」` : `レッスン${lesson}`;
+}
 
 const PALETTE = ['#50fa7b', '#8be9fd', '#ffb86c', '#bd93f9', '#ff79c6', '#f1fa8c'];
 
@@ -77,8 +84,13 @@ function Example({
   return (
     <div className="ccorr-example">
       <div className="ccorr-ex-head">
-        <h3>{ex.title}</h3>
+        <h3>
+          レッスン{ex.lesson}：{ex.title}
+        </h3>
         <span className="ccorr-desc">{ex.description}</span>
+        {recalledLabel(ex.recallsLesson) && (
+          <span className="ccorr-recall">← {recalledLabel(ex.recallsLesson)} の回収</span>
+        )}
         {ex.loadableSource && (
           <button onClick={() => onLoad(ex.loadableSource!)}>この CASL2 を読み込む</button>
         )}
@@ -134,7 +146,7 @@ export function CCorrespondencePane({ onLoad }: { onLoad: (src: string) => void 
               className={e.id === activeId ? 'active' : ''}
               onClick={() => setActiveId(e.id)}
             >
-              {e.title}
+              {e.lesson}. {e.title}
             </button>
           ))}
         </div>

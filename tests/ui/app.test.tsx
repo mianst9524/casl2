@@ -19,7 +19,10 @@ function regHex(name: string): string {
 describe('App 統合', () => {
   it('アセンブル→実行で総和 15 がレジスタに現れる', () => {
     renderApp();
-    // 既定サンプルは「1〜5 の総和」
+    // 「繰り返す（1〜5 の総和）」レッスンを選ぶ
+    fireEvent.change(screen.getByLabelText('レッスン：'), {
+      target: { value: 'sum' },
+    });
     fireEvent.click(screen.getByRole('button', { name: 'アセンブル＆ロード' }));
     expect(screen.getByText(/ロード済/)).toBeInTheDocument();
 
@@ -41,7 +44,7 @@ describe('App 統合', () => {
 
   it('自己書き換え：書き換えた語が命令として実行される', () => {
     renderApp();
-    fireEvent.change(screen.getByLabelText('サンプル：'), {
+    fireEvent.change(screen.getByLabelText('レッスン：'), {
       target: { value: 'selfmod' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'アセンブル＆ロード' }));
