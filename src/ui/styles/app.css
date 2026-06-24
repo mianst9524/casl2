@@ -1,0 +1,564 @@
+:root {
+  --bg: #1e1f29;
+  --panel: #282a36;
+  --panel2: #21222c;
+  --fg: #f8f8f2;
+  --muted: #9aa0b5;
+  --accent: #8be9fd;
+  --code: #50fa7b;
+  --data: #ffb86c;
+  --stack: #bd93f9;
+  --ext: #ff79c6;
+  --changed: #f1fa8c;
+  --border: #44475a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Segoe UI', 'Hiragino Sans', 'Noto Sans JP', system-ui, sans-serif;
+  font-size: 13px;
+}
+
+.mono {
+  font-family: 'Cascadia Mono', 'Consolas', 'SFMono-Regular', monospace;
+}
+
+.app {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.4rem 1rem;
+  background: var(--panel2);
+  border-bottom: 1px solid var(--border);
+}
+.app-header h1 {
+  font-size: 1.1rem;
+  margin: 0;
+}
+.sample-select select {
+  background: var(--panel);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+}
+.level-select {
+  margin-left: auto;
+  display: flex;
+  gap: 0;
+}
+.level-select button {
+  background: var(--panel);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  padding: 0.25rem 0.7rem;
+  cursor: pointer;
+}
+.level-select button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+.level-select button:last-child {
+  border-radius: 0 4px 4px 0;
+}
+.level-select button.active {
+  background: var(--accent);
+  color: #11131a;
+  font-weight: 600;
+}
+
+/* キーボードフォーカスを明示 */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* CodeMirror エディタ */
+.cm-editor {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 13px;
+}
+.cm-exec-line {
+  background: rgba(80, 250, 123, 0.18);
+}
+
+.controlbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+.controlbar button {
+  background: #3b3d4f;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+}
+.controlbar button:hover:not(:disabled) {
+  background: #4a4d63;
+}
+.controlbar button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.controlbar button.ext {
+  border-color: var(--ext);
+  color: var(--ext);
+}
+.controlbar .status {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr 0.9fr;
+  gap: 0.6rem;
+  padding: 0.6rem;
+  overflow: hidden;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  overflow: auto;
+  min-height: 0;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.6rem;
+}
+.panel h2 {
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem;
+  color: var(--accent);
+}
+
+/* --- ソース --- */
+.source-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+button.primary {
+  background: var(--accent);
+  color: #11131a;
+  border: none;
+  border-radius: 4px;
+  padding: 0.35rem 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.editor {
+  width: 100%;
+  height: 220px;
+  background: var(--panel2);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.5rem;
+  resize: vertical;
+  line-height: 1.5;
+  white-space: pre;
+}
+.diagnostics {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+.diagnostics li {
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+}
+.diagnostics li.error {
+  background: #5b2330;
+  color: #ffb3c0;
+}
+.diagnostics li.warning {
+  background: #4b432a;
+  color: #ffe08a;
+}
+
+/* --- アセンブル一覧 --- */
+.listing {
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.4rem;
+  font-size: 12px;
+}
+.listing-row {
+  display: grid;
+  grid-template-columns: 2rem 4rem 6rem 1fr;
+  gap: 0.4rem;
+  padding: 0.1rem 0.2rem;
+  border-radius: 3px;
+}
+.listing-head {
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.listing-row.current {
+  background: #3a4a35;
+  outline: 1px solid var(--code);
+}
+.listing .lc {
+  color: var(--muted);
+  text-align: right;
+}
+
+/* --- レジスタ --- */
+.regtable {
+  width: 100%;
+  border-collapse: collapse;
+}
+.regtable th,
+.regtable td {
+  padding: 0.15rem 0.4rem;
+  text-align: right;
+  border-bottom: 1px solid #33354a;
+}
+.regtable thead th {
+  color: var(--muted);
+  font-weight: 500;
+  text-align: right;
+}
+.regtable tbody th {
+  text-align: left;
+  color: var(--accent);
+}
+.regtable .bin {
+  font-size: 11px;
+  color: var(--muted);
+}
+tr.changed td,
+.changed {
+  background: rgba(241, 250, 140, 0.18);
+  box-shadow: inset 3px 0 0 var(--changed); /* 色覚に依存しない形状キュー */
+  animation: flash 0.6s ease-out;
+}
+@keyframes flash {
+  from {
+    background: rgba(241, 250, 140, 0.55);
+  }
+  to {
+    background: rgba(241, 250, 140, 0.18);
+  }
+}
+.flags {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+  padding: 0.3rem;
+  border-radius: 4px;
+}
+.flag {
+  color: var(--muted);
+}
+.flag.on {
+  color: var(--code);
+  font-weight: 700;
+}
+.ext-state {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-top: 0.4rem;
+  padding: 0.3rem;
+  border: 1px dashed var(--ext);
+  border-radius: 4px;
+}
+.ext-badge {
+  background: var(--ext);
+  color: #11131a;
+  font-size: 10px;
+  padding: 0.05rem 0.3rem;
+  border-radius: 3px;
+  font-weight: 700;
+}
+
+/* --- メモリ --- */
+.memory-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.memory-tools button {
+  background: #3b3d4f;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  margin-left: 0.3rem;
+}
+.legend {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  font-size: 11px;
+  margin-bottom: 0.3rem;
+}
+.legend .note {
+  color: var(--muted);
+}
+.legend .role-code {
+  color: var(--code);
+}
+.legend .role-data {
+  color: var(--data);
+}
+.legend .role-stack {
+  color: var(--stack);
+}
+.memlist {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel2);
+}
+.memrow {
+  display: grid;
+  grid-template-columns: 1.6rem 4rem 4rem 3.2rem 1fr;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0 0.3rem;
+  cursor: pointer;
+  font-size: 12px;
+  border-bottom: 1px solid #2c2e3c;
+}
+.memrow:hover {
+  background: #30323f;
+}
+.memrow.selected {
+  outline: 1px solid var(--accent);
+}
+.memrow.pr {
+  background: #2c3a2c;
+}
+.memrow .marker {
+  color: var(--code);
+  font-weight: 700;
+}
+.memrow .addr {
+  color: var(--muted);
+}
+.rolelabel {
+  font-size: 10px;
+  text-align: center;
+  border-radius: 3px;
+  padding: 0 0.2rem;
+}
+.role-code .rolelabel,
+.rolelabel.role-code {
+  color: var(--code);
+}
+.rolelabel.role-data {
+  color: var(--data);
+}
+.rolelabel.role-stack {
+  color: var(--stack);
+}
+.rolelabel.role-free {
+  color: #5a5d72;
+}
+.memrow .interp {
+  color: var(--muted);
+}
+.memrow.role-code .interp {
+  color: var(--code);
+}
+
+/* --- インスペクタ --- */
+.insp-addr {
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+.insp-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.insp-table th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: 500;
+  padding: 0.2rem 0.4rem;
+  width: 8rem;
+}
+.insp-table td {
+  padding: 0.2rem 0.4rem;
+}
+.insp-table .big {
+  font-size: 1.1rem;
+  color: var(--code);
+}
+.insp-note {
+  color: var(--muted);
+  font-size: 11px;
+  margin: 0.5rem 0 0;
+}
+
+/* --- スタック --- */
+.stack-note {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 0.3rem;
+}
+.stack-row {
+  display: grid;
+  grid-template-columns: 2.4rem 4rem 4rem;
+  gap: 0.3rem;
+  padding: 0.05rem 0.2rem;
+}
+.stack-row.sp {
+  background: rgba(189, 147, 249, 0.2);
+}
+.stack-row .marker {
+  color: var(--stack);
+  font-weight: 700;
+}
+.stack-row .addr {
+  color: var(--muted);
+}
+
+/* --- 入出力 --- */
+.io-label {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  margin: 0.4rem 0 0.2rem;
+}
+.io-input {
+  width: 100%;
+  height: 60px;
+  background: var(--panel2);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem;
+  resize: vertical;
+}
+.io-output {
+  background: var(--panel2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem;
+  margin: 0;
+  min-height: 40px;
+  white-space: pre-wrap;
+  color: var(--code);
+}
+
+/* --- C 対応ドック --- */
+.dock {
+  border-top: 1px solid var(--border);
+  background: var(--panel2);
+  max-height: 300px;
+  overflow: auto;
+  padding: 0.6rem;
+}
+.ccorr-head {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.ccorr-tabs {
+  display: flex;
+  gap: 0.3rem;
+}
+.ccorr-tabs button {
+  background: #3b3d4f;
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.2rem 0.6rem;
+  cursor: pointer;
+}
+.ccorr-tabs button.active {
+  background: var(--accent);
+  color: #11131a;
+  font-weight: 600;
+}
+.ccorr-ex-head {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0.5rem 0;
+}
+.ccorr-ex-head h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+.ccorr-desc {
+  color: var(--muted);
+  flex: 1;
+}
+.ccorr-ex-head button {
+  background: #3b3d4f;
+  color: var(--fg);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  cursor: pointer;
+}
+.ccorr-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+.ccorr-coltitle {
+  color: var(--muted);
+  font-size: 11px;
+  margin-bottom: 0.2rem;
+}
+.ccorr-code {
+  margin: 0;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ccorr-line {
+  padding: 0.1rem 0.4rem;
+  white-space: pre;
+  cursor: default;
+}
+.ccorr-regions {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.ccorr-regions li {
+  padding: 0.15rem 0.5rem;
+  background: var(--panel);
+  border-radius: 0 4px 4px 0;
+}
+.ccorr-regions li.hot {
+  background: #3a3d52;
+}
+.ccorr-note {
+  color: var(--data);
+  font-size: 12px;
+  margin: 0.5rem 0 0;
+}
