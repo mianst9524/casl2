@@ -4,13 +4,15 @@ import { useMachine } from '../machine/MachineContext';
 import { useMachineVersion } from '../machine/useMachineVersion';
 import { toHex } from '../lib/radix';
 import { formatDecoded } from '../lib/format';
-import { wordToChar, type Machine, MEMORY_SIZE } from '../../core';
+import { decode, wordToChar, type Machine, MEMORY_SIZE } from '../../core';
 
 type Role = 'code' | 'data' | 'stack' | 'free';
 
 interface RowData {
   m: Machine;
   roleMap: Map<number, Role>;
+  /** 2語命令のオペランド語（命令の2語目）。単独デコードしない。 */
+  operandWords: Set<number>;
   pr: number;
   sp: number;
   selected: number;
@@ -26,10 +28,11 @@ const ROLE_LABEL: Record<Role, string> = {
 };
 
 function Row({ index, style, data }: ListChildComponentProps<RowData>) {
-  const { m, roleMap, pr, sp, selected, changed, onSelect } = data;
+  const { m, roleMap, operandWords, pr, sp, selected, changed, onSelect } = data;
   const value = m.getWord(index);
   let role: Role = roleMap.get(index) ?? 'free';
   if (role === 'free' && index >= sp) role = 'stack';
+  const isOperand = role === 'code' && operandWords.has(index);
   const isPR = index === pr;
   const isSP = index === sp;
   const cls = [
@@ -44,7 +47,9 @@ function Row({ index, style, data }: ListChildComponentProps<RowData>) {
 
   const interp =
     role === 'code'
-      ? formatDecoded(m.decodeAt(index))
+      ? isOperand
+        ? `↳ オペランド ${value}`
+        : formatDecoded(m.decodeAt(index))
       : `${value} '${wordToChar(value)}'`;
 
   return (
@@ -71,16 +76,26 @@ export function MemoryView({
   const r = m.getRegisters();
   const ch = m.getLastChanges();
 
-  const roleMap = useMemo(() => {
+  const { roleMap, operandWords } = useMemo(() => {
     const map = new Map<number, Role>();
+    const operands = new Set<number>();
     const sm = m.getSourceMap();
     if (sm) {
       for (const e of sm) {
         const role: Role = e.kind === 'pseudo-dc' || e.kind === 'pseudo-ds' ? 'data' : 'code';
         for (let i = 0; i < e.words.length; i++) map.set(e.address + i, role);
+        if (role !== 'code') continue;
+        // 命令境界を再構築し、2語命令の2語目（オペランド語）を記録する。
+        // マクロ展開で複数命令が連なる行にも対応するため語長で歩く。
+        let off = 0;
+        while (off < e.words.length) {
+          const d = decode((a) => e.words[a - e.address] ?? 0, e.address + off);
+          if (d.wordLength === 2 && off + 1 < e.words.length) operands.add(e.address + off + 1);
+          off += d.wordLength;
+        }
       }
     }
-    return map;
+    return { roleMap: map, operandWords: operands };
     // sourceMap はロード時のみ変わる。version で十分。
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [m, m.getVersion()]);
@@ -88,6 +103,7 @@ export function MemoryView({
   const data: RowData = {
     m,
     roleMap,
+    operandWords,
     pr: r.PR,
     sp: r.SP,
     selected,
